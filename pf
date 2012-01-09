@@ -1,0 +1,11 @@
+#!/usr/bin/ruby -w
+require 'rubygems'
+require 'json'
+
+Dir["lib/*.rb"].each {|file| require file }
+
+if !Commandline::run(ARGV, "commands")
+
+  puts "HELP"
+
+end 
