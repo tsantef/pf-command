@@ -1,25 +1,31 @@
+require 'yaml'
+
 module Commandline
   
   class CommandHelper
     @metadata = []
   end
   
-  def run(argv, load_path = nil)
+  def run(argv)
     if argv.nil? || !argv.is_a?(Array) || argv.length < 1
       puts "Invalid Command"
       return false 
     end
 
-    Dir["#{load_path}/*.rb"].each {|file| require file } unless load_path.nil?
+    Dir["#{COMMAND_PATH}/*.rb"].each {|file| require file }
     
     command = argv.shift
     
-    if command == 'help'
+    if command == 'help' 
       help_command = argv.shift
+
+      unless help_command.nil? || help_command.empty?
+        show_command_help(help_command)
+        return true
+      end
       
-      show_command_help(help_command)
-      
-      return true
+      puts "Help expects an argument"
+      return false
     end
   
     if Commands.method_defined?(command) then
@@ -41,10 +47,10 @@ module Commandline
     
     # usage
     Commands.instance_methods().each do |method_name|
-      help_method = "#{method_name}_usage"
-      if Commands.respond_to?(help_method) then
-        required_method = Commands.method(help_method)
-        help_text += required_method.call() + "\n"
+      command_yml_path = "#{COMMAND_PATH}/#{method_name}.yml"
+      if File.exists? command_yml_path
+        command_info = YAML.load(IO.read(command_yml_path))
+        help_text += "   #{command_info['usage']}\n" unless command_info['usage'].nil?
       end
     end
     
@@ -52,16 +58,19 @@ module Commandline
   end
   module_function :help
   
-  def self.show_command_help(help_command)
+  def self.show_command_help(method_name)
     help_text = ''
       
-    help_method = "#{help_command}_help"
-    if Commands.respond_to?(help_method) then
-      required_method = Commands.method(help_method)
-      help_text += required_method.call()
+    command_json_path = "#{COMMAND_PATH}/#{method_name}.yml"
+    if File.exists? command_json_path
+      command_json_file = File.open(command_json_path, 'r')
+      command_json = command_json_file.readlines.to_s
+      command_info = JSON.parse(command_json)
+      
+      help_text += "   #{command_info['help']}\n" unless command_info['help'].nil?
     end
       
-    puts help_text
+    help_text
   end
   
 end

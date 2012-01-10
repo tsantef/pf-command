@@ -1,7 +1,4 @@
 module Commands
-  def self.view_usage
-    '   view {app id}'
-  end
   def view(argv)
     command = argv.shift
 

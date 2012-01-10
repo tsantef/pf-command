@@ -1,7 +1,4 @@
 module Commands
-  def self.clone_usage
-    '   clone {app id}'
-  end
   def clone(argv)
     app_id = argv.shift
     

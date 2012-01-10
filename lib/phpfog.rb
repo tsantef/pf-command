@@ -3,8 +3,6 @@ require 'open-uri'
 
 class PHPfog
   
-  SESSION_PATH = 'session.json'
-  
   $phpfog = nil
   $session = nil
   $isLoggedIn = false

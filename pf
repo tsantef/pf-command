@@ -4,8 +4,10 @@ require 'json'
 
 Dir["lib/*.rb"].each {|file| require file }
 
-if !Commandline::run(ARGV, "commands")
+COMMAND_PATH = 'commands'
+SESSION_PATH = 'config/session.json'
 
+if !Commandline::run(ARGV)
   puts "usage: pf <command> <args>"
   puts
   puts "List of commands:"

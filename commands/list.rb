@@ -1,7 +1,4 @@
 module Commands
-  def self.list_usage
-    "   list clouds\n   list apps {cloud id}" 
-  end
   def list(argv)
     command = argv.shift
     

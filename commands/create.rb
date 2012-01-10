@@ -1,11 +1,5 @@
 module Commands
-  def self.new_usage
-    '   new app {cloud id}'
-  end
-  def self.new_help
-    'New Help'
-  end
-  def new(argv)
+  def create(argv)
     command = argv.shift
     
     case command
