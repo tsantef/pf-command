@@ -44,17 +44,33 @@ class PHPfog
   def get_apps(cloud_id)
     authorize!
     
-    resp = rpeek $phpfog.get("/clouds/#{cloud_id}")
+    apps_url = nil
+    app_item_selector = nil
     
+    
+    if cloud_id == '1' || cloud_id == 'shared'
+      apps_url = '/account'
+      app_item_selector = '#clouds li:last .drop-down li'
+      app_link_selector = 'a'
+      app_status_selector = nil
+    else
+      apps_url = "/clouds/#{cloud_id}"
+      app_item_selector = '#apps li.app'
+      app_link_selector = 'h4 a'
+      app_status_selector = '.title span'
+    end
+    
+    resp = rpeek $phpfog.get(apps_url)
+
     doc = Nokogiri::HTML(resp.body)
 
     apps = Array.new
-    app_items = doc.css("#apps li.app")
+    app_items = doc.css(app_item_selector)
     app_items.each do |app_item|
-      app_link = app_item.at_css("h4 a")
+      app_link = app_item.at_css(app_link_selector)
       app_name = app_link.text.strip
       app_href = app_link.attr('href')
-      app_status = app_item.at_css(".title span").text.strip
+      app_status = app_item.at_css(app_status_selector).text.strip unless app_status_selector.nil?
 
       appIdRe = /\/(\d+)/
       m = appIdRe.match(app_href)
@@ -84,10 +100,35 @@ class PHPfog
     authorize!
     
     resp = rpeek $phpfog.get("/apps/#{app_id}")
-    puts red resp.code
     resp = rpeek $phpfog.delete("/apps/#{app_id}", { 'authenticity_token' => get_auth_token(resp.body) })
-    puts resp.code
+
     resp.code == "200"
+  end
+  
+  def domain_available?(domain_name)
+    authorize!
+    resp = rpeek $phpfog.get("/apps/subdomain_available?app[domain_name]=#{domain_name}", nil, { 'Accept' => 'application/json, text/javascript, */*; q=0.01', 'X-Requested-With' => 'XMLHttpRequest', 'Accept-Charset' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 'Accept-Charset' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 'Connection' => 'keep-alive'  })
+    return resp.code == '200' && resp.body == 'true' 
+  end
+  
+  def new_app(cloud_id, jumpstart_id, domain_name, mysql_password)
+    authorize!
+    
+    resp = rpeek $phpfog.get("/apps/new?cloud_id=#{cloud_id}")
+    resp = rpeek $phpfog.post("/apps", { 'authenticity_token' => get_auth_token(resp.body),
+                                          'cloud_id' => cloud_id,
+                                          'app[jump_start_id]' => jumpstart_id,
+                                          'app[login]' => 'Custom App',
+                                          'app[password]' => mysql_password, 
+                                          'app[domain_name]' => domain_name })
+   
+   
+    if resp.code == "302"
+      appIdRe = /\/(\d+)/
+      m = appIdRe.match(resp['location'])
+      return m.captures.shift unless m.nil?
+    end                                   
+    nil
   end
   
   def loggedin?
@@ -138,17 +179,6 @@ class PHPfog
       save_session
     end
     resp
-  end
-
-  def prompt(msg, isPassword = false)
-      print(msg)
-      system "stty -echo" if isPassword
-      input = gets
-      if isPassword 
-        system "stty echo"
-        puts ''
-      end
-      input
   end
   
   def load_session

@@ -1,5 +1,8 @@
 module Commands
-  def self.delete(argv)
+  def self.delete_usage
+    '   delete app {app id}'
+  end
+  def delete(argv)
     command = argv.shift
     
     case command

@@ -1,5 +1,8 @@
 module Commands
-  def self.view(argv)
+  def self.view_usage
+    '   view {app id}'
+  end
+  def view(argv)
     command = argv.shift
 
     phpfog = PHPfog.new

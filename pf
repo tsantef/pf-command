@@ -6,6 +6,10 @@ Dir["lib/*.rb"].each {|file| require file }
 
 if !Commandline::run(ARGV, "commands")
 
-  puts "HELP"
-
+  puts "usage: pf <command> <args>"
+  puts
+  puts "List of commands:"
+  puts Commandline::help
+  puts
+  puts "Use 'pf help <command>' for more information on a specific command." 
 end 

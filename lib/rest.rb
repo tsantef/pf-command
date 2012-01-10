@@ -29,12 +29,16 @@ class Rest
     end
   end
 
-  def get(url, params = nil)
-    req = Net::HTTP::Get.new(url, { 'Cookie' => cookie_to_s, 'User-Agent' => $useragent })
+  def get(url, params = nil, additional_header = nil)
+    header = { 'Cookie' => cookie_to_s, 'User-Agent' => $useragent }
+    header = header.merge(additional_header) unless additional_header.nil?
+    req = Net::HTTP::Get.new(url, header)
     make_request(req, params)
   end
   
-  def post(url, params, payload = nil)
+  def post(url, params, payload = nil, additional_header = nil)
+    header = { 'Cookie' => cookie_to_s, 'User-Agent' => $useragent }
+    header = header.merge(additional_header) unless additional_header.nil?
     req = Net::HTTP::Post.new(url, { 'Cookie' => cookie_to_s, 'User-Agent' => $useragent })
     make_request(req, params, payload)
   end
@@ -82,7 +86,7 @@ private
      req.body = payload
      req.set_content_type('multipart/form-data')
     end
-    
+ 
     $last_resp = $http.request(req)
     
     unless $last_resp['set-cookie'].nil?
