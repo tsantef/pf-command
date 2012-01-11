@@ -6,7 +6,7 @@ module Commandline
     @metadata = []
   end
   
-  def run!(argv)
+  def run!pf (argv)
     if argv.nil? || !argv.is_a?(Array) || argv.length < 1
       puts "Invalid Command"
       return false 
@@ -40,5 +40,5 @@ module Commandline
     
     true
   end
-  module_function :run
+  module_function :run!
 end
