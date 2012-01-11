@@ -1,0 +1,6 @@
+require "pf-command/colorize"
+require "pf-command/commandline"
+require "pf-command/phpfog"
+require "pf-command/prompt"
+require "pf-command/rest"
+require "pf-command/version"

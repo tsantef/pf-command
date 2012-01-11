@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+lib = File.expand_path(File.dirname(__FILE__) + '/../lib')
+$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
+
+require 'rubygems'
+require 'pf-command'
+require 'json'
+
+unless Commandline::run!(ARGV)
+  abort File.read(__FILE__).split('__END__').last
+end 
+
+__END__
+Usage: pf list <list_command>
+       pf clone <app_id>
+       pf create <cloud_id>
+       pf delete <app_id>
+       pf logout
+       pf view app_id
+
+LIST COMMAND
+
+  cloud
+    List all clouds
+
+  apps <cloud_id> 
+    List all apps in the specifed cloud
+

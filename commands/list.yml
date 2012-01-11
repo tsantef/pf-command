@@ -1,5 +1,0 @@
-usage: |
-  list clouds
-     list apps {cloud id}
-help: |
-  This is the help for list

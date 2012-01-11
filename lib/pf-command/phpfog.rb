@@ -181,7 +181,7 @@ class PHPfog
   
   def load_session
     begin
-      session_file = File.open(SESSION_PATH, 'r')
+      session_file = File.open("../config/session.json", 'r')
       session_json = session_file.readlines.to_s
       $session = JSON.parse(session_json)
     rescue
@@ -190,20 +190,21 @@ class PHPfog
   end
   
   def save_session
+    puts File.expand_path('../config/session.json')
     session_file = File.new(SESSION_PATH, "w+")
     session_file.puts(JSON.generate($session))
     session_file.close
   end
   
   def get_auth_token(html)
-     #<input name="authenticity_token" type="hidden" value="CSldCthWb3MLTncXJOWiZQOa0R94c0hnnP9ijCM6Dy4=" />
-      authTokenRe = /authenticity_token" type="hidden" value="(.*?)"/
-      m = authTokenRe.match(html)
-      if !m.nil?
-        m.captures.shift
-      else
-        ''
-      end
+    #<input name="authenticity_token" type="hidden" value="CSldCthWb3MLTncXJOWiZQOa0R94c0hnnP9ijCM6Dy4=" />
+    authTokenRe = /authenticity_token" type="hidden" value="(.*?)"/
+    m = authTokenRe.match(html)
+    if !m.nil?
+      m.captures.shift
+    else
+      ''
+    end
   end
   
 end
