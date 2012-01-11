@@ -181,7 +181,8 @@ class PHPfog
   
   def load_session
     begin
-      session_file = File.open("../config/session.json", 'r')
+      session_path = File.expand_path("~#{ENV['USER']}/.pf-command-session")
+      session_file = File.open(session_path, 'r')
       session_json = session_file.readlines.to_s
       $session = JSON.parse(session_json)
     rescue
@@ -190,8 +191,8 @@ class PHPfog
   end
   
   def save_session
-    puts File.expand_path('../config/session.json')
-    session_file = File.new(SESSION_PATH, "w+")
+    session_path = File.expand_path("~#{ENV['USER']}/.pf-command-session")
+    session_file = File.new(session_path, "w+")
     session_file.puts(JSON.generate($session))
     session_file.close
   end
