@@ -168,6 +168,22 @@ class PHPfog
     end
   end
   
+  def new_ssh(ssh_key_name, ssh_key_key)
+    authorize!
+
+    resp = rpeek $phpfog.get("/account")
+    resp = rpeek $phpfog.post("/ssh_keys", { 'authenticity_token' => get_auth_token(resp.body),
+                                          'ssh_key[name]' => ssh_key_name,
+                                          'ssh_key[key]' => ssh_key_key}
+                                         )
+    if resp.code == "302"
+      idRe = /\/(\d+)/
+      m = idRe.match(resp['location'])
+      return true 
+    end
+    false
+  end  
+  
   private
   
   def rpeek(resp)
