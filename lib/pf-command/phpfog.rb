@@ -115,7 +115,7 @@ class PHPfog
     new_app_path = '/apps/new'
 
     unless cloud_id.nil? || cloud_id.empty?
-      get_path += "?cloud_id=#{cloud_id}"
+      new_app_path += "?cloud_id=#{cloud_id}"
     end
 
     resp = rpeek $phpfog.get(new_app_path)
@@ -125,7 +125,6 @@ class PHPfog
                                           'app[login]' => 'Custom App',
                                           'app[password]' => mysql_password,
                                           'app[domain_name]' => domain_name })
-
 
     if resp.code == "302"
       appIdRe = /\/(\d+)/

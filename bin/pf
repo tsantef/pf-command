@@ -14,11 +14,13 @@ end
 __END__
 Usage: pf list <list_command>
        pf clone <app_id>
-       pf create <cloud_id>
+       pf create <create_command>
        pf delete <app_id>
        pf logout
        pf view app_id
+       pf genssh
        pf whoami
+       pf help [command]
 
 LIST COMMAND
 
@@ -26,5 +28,10 @@ LIST COMMAND
     List all clouds
 
   apps <cloud_id>
-    List all apps in the specifed cloud
+    List all apps in a specific cloud
+
+CREATE COMMAND
+
+  app [<cloud_id>]
+    Creates a new custom app. Specify a cloud id to create the app in or leave blank to create the app in the shared cloud.
 
