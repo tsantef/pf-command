@@ -1,33 +1,35 @@
 module Commands
   def create(argv)
     command = argv.shift
-    
+
     case command
     when "app"
-      
+
       cloud_id = argv.shift
-      
+
+      jumpstart_id = argv.shift
+
       if cloud_id == '1' || cloud_id == 'shared'
         cloud_id = ''
-      end 
-      
+      end
+
       phpfog = PHPfog.new
-      
+
       mysql_password = prompt 'MySQL Password: '
-      if mysql_password.empty? 
+      if mysql_password.empty?
         puts 'New app canceled'
         exit
       end
-      
+
       domain_name = nil
       while domain_name == nil
         temp_domain_name = prompt 'Domain Name: '
-        
-        if temp_domain_name.empty? 
+
+        if temp_domain_name.empty?
           puts bwhite 'New app canceled'
           exit
         end
-        
+
         if phpfog.domain_available?(temp_domain_name)
           domain_name = temp_domain_name
         else
@@ -41,12 +43,12 @@ module Commands
       else
         puts bwhite 'New app failed to be created.'
       end
-      
+
     else
       puts "Unknown Command: " + (command || '')
       return false
     end
-    
+
     true
   end
 end

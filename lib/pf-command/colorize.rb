@@ -12,7 +12,7 @@ def red(str, endColor = 0)
   colorize(str, "31", endColor)
 end
 
-#31	Red
+#31	Bright Red
 def bred(str, endColor = 0)
   colorize(str, "1;31", endColor)
 end
@@ -32,7 +32,7 @@ def yellow(str, endColor = 0)
   colorize(str, "33", endColor)
 end
 
-#33	Yellow
+#33	Bright Yellow
 def byellow(str, endColor = 0)
   colorize(str, "1;33", endColor)
 end
@@ -42,7 +42,7 @@ def blue(str, endColor = 0)
   colorize(str, "34", endColor)
 end
 
-#34	Blue
+#34	Bright Blue
 def bblue(str, endColor = 0)
   colorize(str, "1;34", endColor)
 end
@@ -52,7 +52,7 @@ def magenta(str, endColor = 0)
   colorize(str, "35", endColor)
 end
 
-#35	Magenta
+#35	Bright Magenta
 def bmagenta(str, endColor = 0)
   colorize(str, "1;35", endColor)
 end

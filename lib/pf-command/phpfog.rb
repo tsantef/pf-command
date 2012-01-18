@@ -112,7 +112,13 @@ class PHPfog
   def new_app(cloud_id, jumpstart_id, domain_name, mysql_password)
     authorize!
 
-    resp = rpeek $phpfog.get("/apps/new?cloud_id=#{cloud_id}")
+    new_app_path = '/apps/new'
+
+    unless cloud_id.nil? || cloud_id.empty?
+      get_path += "?cloud_id=#{cloud_id}"
+    end
+
+    resp = rpeek $phpfog.get(new_app_path)
     resp = rpeek $phpfog.post("/apps", { 'authenticity_token' => get_auth_token(resp.body),
                                           'cloud_id' => cloud_id,
                                           'app[jump_start_id]' => jumpstart_id,
