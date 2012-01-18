@@ -188,8 +188,22 @@ class PHPfog
     end
     false
   end
-
+  
+  def self.logout
+    if File.exists? PHPfog.session_path 
+      File.delete PHPfog.session_path
+      puts bright 'Successfully logged out.'
+    else
+      puts bwhite 'Already logged out.'
+    end
+  end
+  
   private
+
+  def self.session_path
+    File.expand_path("~#{ENV['USER']}/.pf-command-session")
+    
+  end
 
   def rpeek(resp)
     # look for cookie change
