@@ -104,7 +104,7 @@ class PHPfog
     resp = rpeek $phpfog.get("/apps/#{app_id}")
     resp = rpeek $phpfog.delete("/apps/#{app_id}", { 'authenticity_token' => get_auth_token(resp.body) })
 
-    resp.code == "200"
+    resp.code == 200
   end
 
   def domain_available?(domain_name)
@@ -130,7 +130,7 @@ class PHPfog
                                           'app[password]' => mysql_password,
                                           'app[domain_name]' => domain_name })
 
-    if resp.code == "302"
+    if resp.code == 302
       appIdRe = /\/(\d+)/
       m = appIdRe.match(resp['location'])
       return m.captures.shift unless m.nil?
@@ -142,7 +142,7 @@ class PHPfog
     if $isLoggedIn == false
       rpeek $phpfog.get("/login") # required to establish session
       resp = rpeek $phpfog.get("/account")
-      $isLoggedIn = resp.code == "200"
+      $isLoggedIn = resp.code == 200
     end
     $isLoggedIn
   end
@@ -160,7 +160,7 @@ class PHPfog
                       'user_session[remember_me]' => '0',
                       'commit' => 'login' })
 
-    if resp.code == '302'
+    if resp.code == 302
       puts cyan "Login Successfull."
       $session['username'] = username
       $isLoggedIn = true
@@ -169,7 +169,7 @@ class PHPfog
     end
 
     resp = rpeek $phpfog.get("/account")
-    resp.code == "200"
+    resp.code == 200
   end
 
   def username
@@ -190,7 +190,7 @@ class PHPfog
                                           'ssh_key[name]' => ssh_key_name,
                                           'ssh_key[key]' => ssh_key_key}
                                          )
-    if resp.code == "302"
+    if resp.code == 302
       idRe = /\/(\d+)/
       m = idRe.match(resp['location'])
       return true
@@ -201,7 +201,7 @@ class PHPfog
   def self.logout
     if File.exists? PHPfog.session_path 
       File.delete PHPfog.session_path
-      puts bright 'Successfully logged out.'
+      puts bwhite 'Successfully logged out.'
     else
       puts bwhite 'Already logged out.'
     end
@@ -211,10 +211,10 @@ class PHPfog
 
   def self.session_path
     File.expand_path("~#{ENV['USER']}/.pf-command-session")
-    
   end
 
   def rpeek(resp)
+    puts cyan $phpfog.cookies
     # look for cookie change
     if $session['cookies'].nil? || $phpfog.cookies.to_s != $session['cookies'].to_s
       $session['cookies'] = $phpfog.cookies.clone
