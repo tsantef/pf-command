@@ -52,3 +52,13 @@ module Commands
     true
   end
 end
+
+__END__
+Create
+
+Usage: pf create <app_id>
+
+Description:
+
+  Clones an app to the current directory.
+

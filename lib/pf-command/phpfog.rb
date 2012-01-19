@@ -86,12 +86,16 @@ class PHPfog
     app = {}
 
     resp = rpeek $phpfog.get("/apps/#{app_id}")
-    doc = Nokogiri::HTML(resp.body)
+    if resp.code = "200"
+      doc = Nokogiri::HTML(resp.body)
 
-    app['site_address'] = doc.css("#app-view-live a").attr('href')
-    app['repo'] = doc.css("#source_code ul code").text.strip[2..-1]
+      app['site_address'] = doc.css("#app-view-live a").attr('href')
+      app['repo'] = doc.css("#source_code ul code").text.strip[2..-1]
 
-    app
+      return app
+    else
+      return nil
+    end
   end
 
   def app_delete(app_id)
