@@ -15,7 +15,7 @@ class Rest
 
   def initialize(url, username = nil, password = nil)
     uri = URI(url)
-    $http = RestClient::Resource.new uri.host, {:user => username, :password => password}
+    $http = RestClient::Resource.new uri.to_s, {:user => username, :password => password}
   end
 
   def get(path, params = nil)
@@ -34,7 +34,7 @@ class Rest
   def delete(path, params, payload=nil)
     make_request(:delete, path, params, payload)
   end
-  
+
   def cookies
     $cookies
   end
@@ -53,37 +53,32 @@ private
   end
 
   def make_request(method, path, params = nil, payload = nil)
+
     $last_params = params
     $last_payload = payload
-    
-    args = []
-    args << payload unless payload.nil?
-    args << params unless params.nil?
-    args << { :cookies => $cookies } unless $cookies.nil?
-    puts green args.inspect
+
+    options = {}
+    options[:params] = params unless params.nil?
+    options[:cookies] = cookies unless cookies.nil?
+
+    args = [payload, options].compact
 
     begin
-      $last_resp = $http[path].send(method, *args).to_s
+      $last_resp = $http[path].send(method, *args)
     rescue RestClient::ExceptionWithResponse => e
-      puts e.http_code.to_s + " " + path
       $last_resp = e.response
-      puts yellow $last_resp.cookies.inspect
     rescue Errno::ECONNREFUSED
       code = -1
       body = nil
     end
 
-puts bwhite $last_resp.raw_headers.inspect
-
-$cookies = {} if $cookies.nil?
-unless $last_resp.raw_headers['set-cookie'].nil?
-  $last_resp.raw_headers['set-cookie'].each do |cookie|
-    key, value = cookie.split('=')
-    $cookies[key] = value
-  end
-end
-    
-    puts red $cookies
+    $cookies = {} if $cookies.nil?
+    unless $last_resp.raw_headers['set-cookie'].nil?
+      $last_resp.raw_headers['set-cookie'].each do |cookie|
+        key, value = cookie.split('=')
+        $cookies[key] = value
+      end
+    end
 
     $last_resp
   end

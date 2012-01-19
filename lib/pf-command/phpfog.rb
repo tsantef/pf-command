@@ -153,7 +153,7 @@ class PHPfog
 
     # open session
     resp = rpeek $phpfog.get("/login")
-    resp = rpeek $phpfog.post("/user_session",
+    resp = rpeek $phpfog.post("/user_session", nil, 
                     { 'authenticity_token' => get_auth_token(resp.body),
                       'user_session[login]' => username,
                       'user_session[password]' => password,
@@ -206,7 +206,7 @@ class PHPfog
       puts bwhite 'Already logged out.'
     end
   end
-  
+
   private
 
   def self.session_path
@@ -214,7 +214,6 @@ class PHPfog
   end
 
   def rpeek(resp)
-    puts cyan $phpfog.cookies
     # look for cookie change
     if $session['cookies'].nil? || $phpfog.cookies.to_s != $session['cookies'].to_s
       $session['cookies'] = $phpfog.cookies.clone
