@@ -14,7 +14,8 @@ module Commandline
 
     Dir[File.expand_path(File.dirname(__FILE__) + '/../commands') + '/*.rb'].each {|file| require file }
 
-    command = argv.shift
+    command = argv.shift || ''
+    command = command.gsub("-","_")
 
     if command == 'help'
       help_command = argv.shift

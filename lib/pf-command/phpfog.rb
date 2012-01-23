@@ -86,11 +86,12 @@ class PHPfog
     app = {}
 
     resp = rpeek $phpfog.get("/apps/#{app_id}")
-    if resp.code = "200"
+
+    if resp.code == 200
       doc = Nokogiri::HTML(resp.body)
 
       app['site_address'] = doc.css("#app-view-live a").attr('href')
-      app['repo'] = doc.css("#source_code ul code").text.strip[2..-1]
+      app['repo'] = doc.css("#source_code ul code").text.strip[2..-1].gsub(/^git clone /, "")
 
       return app
     else

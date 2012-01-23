@@ -7,8 +7,9 @@ module Commands
       phpfog = PHPfog.new
       clouds = phpfog.get_clouds
       clouds.each do |cloud|
-        puts "#{bwhite(cloud['name'])} - #{cloud['description']} (ID:#{red cloud['id']})"
+        puts "#{bwhite(cloud['name'])} - #{cloud['description']} (ID:#{cyan cloud['id']})"
       end
+
     when "apps"
       cloud_id = argv.shift
       phpfog = PHPfog.new
@@ -20,8 +21,9 @@ module Commands
         when "Running"
           app_status = green(app_status)
         end
-        puts "#{bwhite(app['name'])} - #{app_status} (ID:#{red app['id']})"
+        puts "#{bwhite(app['name'])} - #{app_status} (ID:#{cyan app['id']})"
       end
+
     else
       puts "Unknown Command: " + (command || '')
       return false
