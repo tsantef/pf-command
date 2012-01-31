@@ -18,21 +18,21 @@ class Rest
     $http = RestClient::Resource.new uri.to_s, {:user => username, :password => password}
   end
 
-  def get(path, params = nil)
+  def get(path, params=nil, headers=nil)
     path = "#{path}?" + params.map { |k, v| "#{k}=#{v}" }.join("&") unless params.nil? || params.empty?
-    make_request(:get, path)
+    make_request(:get, path, nil, nil, headers)
   end
 
-  def post(path, params, payload=nil)
-    make_request(:post, path, params, payload)
+  def post(path, params, payload=nil, headers=nil)
+    make_request(:post, path, params, payload, headers)
   end
 
-  def put(path, params, payload=nil)
-    make_request(:put, path, params, payload)
+  def put(path, params, payload=nil, headers=nil)
+    make_request(:put, path, params, payload, headers)
   end
 
-  def delete(path, params, payload=nil)
-    make_request(:delete, path, params, payload)
+  def delete(path, params, payload=nil, headers=nil)
+    make_request(:delete, path, params, payload, headers)
   end
 
   def cookies
@@ -52,16 +52,19 @@ private
     cookiestr[0..-2]
   end
 
-  def make_request(method, path, params = nil, payload = nil)
+  def make_request(method, path, params=nil, payload=nil, headers=nil)
 
     $last_params = params
     $last_payload = payload
 
-    options = {}
+    options = headers || {}
     options[:params] = params unless params.nil?
     options[:cookies] = cookies unless cookies.nil?
 
     args = [payload, options].compact
+
+
+    puts args
 
     begin
       $last_resp = $http[path].send(method, *args)

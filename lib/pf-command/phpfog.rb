@@ -8,8 +8,8 @@ class PHPfog
   $isLoggedIn = false
 
   def initialize
-    $phpfog = Rest.new("https://www.phpfog.com")
-
+#    $phpfog = Rest.new("https://www.phpfog.com")
+$phpfog = Rest.new("http://localhost:3000")
     load_session
     $phpfog.cookies = $session['cookies'].clone unless $session['cookies'].nil?
   end
@@ -140,6 +140,11 @@ class PHPfog
   end
 
   def loggedin?
+
+    params = { 'user_session[login]' => 'tim@phpfog.com', 'user_session[password]' => "Appfo5$#" }
+    $phpfog.post("/user_session", nil, params_to_payload(params), {"Api-Auth-Token"=>"just junkeee", :accept => "application/json"})
+
+    exit
     if $isLoggedIn == false
       rpeek $phpfog.get("/login") # required to establish session
       resp = rpeek $phpfog.get("/account")
@@ -250,6 +255,10 @@ class PHPfog
     else
       ''
     end
+  end
+
+  def params_to_payload(params)
+    params.collect { |k, v| "#{k.to_s}=#{CGI::escape(v.to_s)}" }.join('&')
   end
 
 end
