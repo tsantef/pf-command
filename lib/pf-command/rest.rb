@@ -63,9 +63,6 @@ private
 
     args = [payload, options].compact
 
-
-    puts args
-
     begin
       $last_resp = $http[path].send(method, *args)
     rescue RestClient::ExceptionWithResponse => e

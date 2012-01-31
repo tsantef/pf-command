@@ -142,7 +142,7 @@ $phpfog = Rest.new("http://localhost:3000")
   def loggedin?
 
     params = { 'user_session[login]' => 'tim@phpfog.com', 'user_session[password]' => "Appfo5$#" }
-    $phpfog.post("/user_session", nil, params_to_payload(params), {"Api-Auth-Token"=>"just junkeee", :accept => "application/json"})
+ puts  =    $phpfog.post("/user_session", nil, params_to_payload(params), {"Api-Auth-Token"=>"just junkeee", :accept => "application/json"})
 
     exit
     if $isLoggedIn == false
