@@ -48,8 +48,13 @@ module Commands
       name = argv.shift
       sshkey = argv.shift
       phpfog = PHPfog.new
-      phpfog.new_ssh(name,sshkey)
-
+      response = phpfog.new_sshkey(name,sshkey)
+      if response.code == 201
+        success_message 'Successfully create new sshkey.'
+      else
+        api_response = JSON.parse(response.body)
+        failure_message api_response['message']
+      end
     else
       puts "Unknown Command: " + (command || '')
       return false

@@ -30,6 +30,9 @@ LIST COMMAND
   apps <cloud_id>
     List all apps in a specific cloud
 
+  sshkeys
+    List all ssh keys
+
 CREATE COMMAND
 
   app [<cloud_id>]

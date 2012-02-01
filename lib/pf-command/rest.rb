@@ -33,8 +33,8 @@ class Rest
     make_request(:put, path, params, payload, headers)
   end
 
-  def delete(path, params, payload=nil, headers=nil)
-    make_request(:delete, path, params, payload, headers)
+  def delete(path, params, headers=nil)
+    make_request(:delete, path, params, nil, headers)
   end
 
   def cookies
