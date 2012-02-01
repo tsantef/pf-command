@@ -6,8 +6,10 @@ require 'rest_client'
 
 class Rest
 
+  attr_accessor :last_response
+
   $http = nil
-  $last_resp = nil
+
   $last_params = nil
   $last_payload = nil
 
@@ -64,23 +66,23 @@ private
     args = [payload, options].compact
 
     begin
-      $last_resp = $http[path].send(method, *args)
+      last_response = $http[path].send(method, *args)
     rescue RestClient::ExceptionWithResponse => e
-      $last_resp = e.response
+      last_response = e.response
     rescue Errno::ECONNREFUSED
       code = -1
       body = nil
     end
 
     $cookies = {} if $cookies.nil?
-    unless $last_resp.raw_headers['set-cookie'].nil?
-      $last_resp.raw_headers['set-cookie'].each do |cookie|
+    unless last_response.raw_headers['set-cookie'].nil?
+      last_response.raw_headers['set-cookie'].each do |cookie|
         key, value = cookie.split('=')
         $cookies[key] = value
       end
     end
 
-    $last_resp
+    last_response
   end
 
 end

@@ -4,39 +4,37 @@ require 'open-uri'
 class PHPfog
 
   $phpfog = nil
-  $session = nil
+  @session = nil
   $isLoggedIn = false
 
   def initialize
 #    $phpfog = Rest.new("https://www.phpfog.com")
-$phpfog = Rest.new("http://localhost:3000")
+  $phpfog = Rest.new("http://localhost:3000")
     load_session
-    $phpfog.cookies = $session['cookies'].clone unless $session['cookies'].nil?
   end
 
   def get_clouds
-    authorize!
 
-    resp = rpeek $phpfog.get("/account")
+    #resp = rpeek $phpfog.get("/account")
 
-    doc = Nokogiri::HTML(resp.body)
+    #doc = Nokogiri::HTML(resp.body)
 
-    clouds = Array.new
-    cloud_items = doc.css("li.cloud")
-    cloud_items.each do |cloud_item|
-      cloud_link = cloud_item.at_css("h4 a")
-      cloud_name = !cloud_link.nil? ? cloud_link.text.strip : 'Shared Cloud'
-      cloud_href = !cloud_link.nil? ? cloud_link.attr('href') : ''
-      cloud_desc = cloud_item.at_css(".title p").text.strip
+    # clouds = Array.new
+    # cloud_items = doc.css("li.cloud")
+    # cloud_items.each do |cloud_item|
+    #   cloud_link = cloud_item.at_css("h4 a")
+    #   cloud_name = !cloud_link.nil? ? cloud_link.text.strip : 'Shared Cloud'
+    #   cloud_href = !cloud_link.nil? ? cloud_link.attr('href') : ''
+    #   cloud_desc = cloud_item.at_css(".title p").text.strip
 
-      cloudIdRe = /\/(\d+)/
-      m = cloudIdRe.match(cloud_href)
-      cloud_id = m.captures.shift unless m.nil?
+    #   cloudIdRe = /\/(\d+)/
+    #   m = cloudIdRe.match(cloud_href)
+    #   cloud_id = m.captures.shift unless m.nil?
 
-      clouds << { 'id' => cloud_id || 1, 'link' => cloud_href, 'name' => cloud_name, 'description' => cloud_desc }
-    end
+    #   clouds << { 'id' => cloud_id || 1, 'link' => cloud_href, 'name' => cloud_name, 'description' => cloud_desc }
+    # end
 
-    clouds
+    # clouds
   end
 
   def get_apps(cloud_id)
@@ -139,69 +137,82 @@ $phpfog = Rest.new("http://localhost:3000")
     nil
   end
 
-  def loggedin?
+  def login
+    #username = (prompt "Username: ").strip
+    #password = (prompt "Password: ", true).strip
+    username = 'tim@phpfog.com'
 
-    params = { 'user_session[login]' => 'tim@phpfog.com', 'user_session[password]' => "Appfo5$#" }
- puts  =    $phpfog.post("/user_session", nil, params_to_payload(params), {"Api-Auth-Token"=>"just junkeee", :accept => "application/json"})
+    payload = { 'login' => username, 'password' => "Appfo5$#" }
+    response = $phpfog.post("/user_session", nil, JSON.generate(payload), { :accept => "application/json" }) #"Api-Auth-Token"=>"just junkeee",
+    api_responce = JSON.parse(response.body)
 
-    exit
-    if $isLoggedIn == false
-      rpeek $phpfog.get("/login") # required to establish session
-      resp = rpeek $phpfog.get("/account")
-      $isLoggedIn = resp.code == 200
-    end
-    $isLoggedIn
-  end
-
-  def login()
-    username = (prompt "Username: ").strip
-    password = (prompt "Password: ", true).strip
-
-    # open session
-    resp = rpeek $phpfog.get("/login")
-    resp = rpeek $phpfog.post("/user_session", nil, 
-                    { 'authenticity_token' => get_auth_token(resp.body),
-                      'user_session[login]' => username,
-                      'user_session[password]' => password,
-                      'user_session[remember_me]' => '0',
-                      'commit' => 'login' })
-
-    if resp.code == 302
-      puts cyan "Login Successfull."
-      $session['username'] = username
-      $isLoggedIn = true
+    if response.code == 201
+      set_session('api-auth-token', api_responce['api-auth-token'])
+      set_session('username', username)
+      return true
     else
-      puts red "Login Failed."
+      puts api_responce['message']
+      return false
     end
 
-    resp = rpeek $phpfog.get("/account")
-    resp.code == 200
   end
 
   def username
-    $session['username']
+    get_session('username')
   end
 
-  def authorize!
-    unless loggedin? || login()
-      throw(:halt, "Not logged in")
+ #def authorize!
+ #   unless loggedin? || login()
+ #     throw(:halt, "Not logged in")
+ #   end
+ # end
+
+  def get_sshkeys
+
+puts red get_session('api-auth-token')
+
+    response = $phpfog.get("/ssh_keys", nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    if response.code == 401 # no auth token
+      puts response 
+      login
+      api_response = JSON.parse(response.body)
+      puts api_response['message']
+      exit
+    elsif response.code == 500
+      api_response = JSON.parse(response.body)
+      puts api_response['message']
+      exit
     end
+
+    sshkeys = JSON.parse(response.body)
+
+puts sshkeys.inspect
+
+
+   # if response.code == 201
+   #   session('api-auth-token', api_responce['api-auth-token'])
+   #   return true
+   # else
+    #   puts api_responce['message']
+    #   return false
+    # end
+
   end
 
   def new_ssh(ssh_key_name, ssh_key_key)
-    authorize!
 
-    resp = rpeek $phpfog.get("/account")
-    resp = rpeek $phpfog.post("/ssh_keys", { 'authenticity_token' => get_auth_token(resp.body),
-                                          'ssh_key[name]' => ssh_key_name,
-                                          'ssh_key[key]' => ssh_key_key}
-                                         )
-    if resp.code == 302
-      idRe = /\/(\d+)/
-      m = idRe.match(resp['location'])
+    payload = { 'name' => ssh_key_name, 'key' => ssh_key_key }
+    response = $phpfog.post("/ssh_keys", nil, JSON.generate(payload), { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    api_responce = JSON.parse(response.body)
+
+    if response.code == 201
+puts "CREATED"
       return true
+    else
+      puts api_responce['message']
+      return false
     end
-    false
+
   end
   
   def self.logout
@@ -221,11 +232,22 @@ $phpfog = Rest.new("http://localhost:3000")
 
   def rpeek(resp)
     # look for cookie change
-    if $session['cookies'].nil? || $phpfog.cookies.to_s != $session['cookies'].to_s
-      $session['cookies'] = $phpfog.cookies.clone
+    #if @session['cookies'].nil? || $phpfog.cookies.to_s != @session['cookies'].to_s
+    #  @session['cookies'] = $phpfog.cookies.clone
+    #  save_session
+    #end
+    resp
+  end
+
+  def set_session(key, value)
+    if @session[key].nil? || @session[key] != value
+      @session[key] = value.clone
       save_session
     end
-    resp
+  end
+
+  def get_session(key)
+    @session[key]
   end
 
   def load_session
@@ -233,16 +255,16 @@ $phpfog = Rest.new("http://localhost:3000")
       session_path = File.expand_path("~#{ENV['USER']}/.pf-command-session")
       session_file = File.open(session_path, 'r')
       session_json = session_file.readlines.to_s
-      $session = JSON.parse(session_json)
+      @session = JSON.parse(session_json)
     rescue
-      $session = {}
+      @session = {}
     end
   end
 
   def save_session
     session_path = File.expand_path("~#{ENV['USER']}/.pf-command-session")
     session_file = File.new(session_path, "w+")
-    session_file.puts(JSON.generate($session))
+    session_file.puts(JSON.generate(@session))
     session_file.close
   end
 

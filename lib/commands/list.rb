@@ -24,6 +24,12 @@ module Commands
         puts "#{bwhite(app['name'])} - #{app_status} (ID:#{cyan app['id']})"
       end
 
+    when "sshkeys"
+      phpfog = PHPfog.new
+      sshkeys = phpfog.get_sshkeys
+      sshkeys.each do |sshkey|
+        puts "#{bwhite(sshkey['name'])}"
+      end
     else
       puts "Unknown Command: " + (command || '')
       return false

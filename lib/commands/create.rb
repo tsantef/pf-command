@@ -44,6 +44,12 @@ module Commands
         puts bwhite 'New app failed to be created.'
       end
 
+    when "sshkey"
+      name = argv.shift
+      sshkey = argv.shift
+      phpfog = PHPfog.new
+      phpfog.new_ssh(name,sshkey)
+
     else
       puts "Unknown Command: " + (command || '')
       return false
