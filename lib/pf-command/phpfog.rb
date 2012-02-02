@@ -5,13 +5,13 @@ class PHPfog
 
   $phpfog = nil
   @session = nil
-  $isLoggedIn = false
 
   def initialize
-#    $phpfog = Rest.new("https://www.phpfog.com")
-  $phpfog = Rest.new("http://localhost:3000")
+    $phpfog = Rest.new(ENV["PHPFOG_URL"] || "https://www.phpfog.com")
     load_session
   end
+
+  # --- Clouds ----
 
   def get_dedicated_clouds
     response = api_call do 
@@ -20,138 +20,72 @@ class PHPfog
     return JSON.parse(response.body)
   end
 
+  # --- Apps ----
+
   def get_apps(cloud_id)
+    params = {}
+    params = { :cloud_id => cloud_id } unless cloud_id == "0"
     response = api_call do 
-      $phpfog.get("/apps", { :cloud_id => cloud_id }, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+      $phpfog.get("/apps", params, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
     end
-    return JSON.parse(response.body)
-      # authorize!
-
-      # apps_url = nil
-      # app_item_selector = nil
-
-
-      # if cloud_id == '1' || cloud_id == 'shared'
-      #   apps_url = '/account'
-      #   app_item_selector = '#clouds li:last .drop-down li'
-      #   app_link_selector = 'a'
-      #   app_status_selector = nil
-      # else
-      #   apps_url = "/clouds/#{cloud_id}"
-      #   app_item_selector = '#apps li.app'
-      #   app_link_selector = 'h4 a'
-      #   app_status_selector = '.title span'
-      # end
-
-      # resp = rpeek $phpfog.get(apps_url)
-
-      # doc = Nokogiri::HTML(resp.body)
-
-      # apps = Array.new
-      # app_items = doc.css(app_item_selector)
-      # app_items.each do |app_item|
-      #   app_link = app_item.at_css(app_link_selector)
-      #   app_name = app_link.text.strip
-      #   app_href = app_link.attr('href')
-      #   app_status = app_item.at_css(app_status_selector).text.strip unless app_status_selector.nil?
-
-      #   appIdRe = /\/(\d+)/
-      #   m = appIdRe.match(app_href)
-      #   app_id = m.captures.shift unless m.nil?
-
-      #   apps << { 'id' => app_id || 1, 'link' => app_href, 'name' => app_name, 'status' => app_status }
-      # end
-
-      # apps
+    response_body = JSON.parse(response.body)
+    if response.code == 200
+      return { :status => response.code, :message => "OK" , :body => response_body }
+    else
+      return { :status => response.code, :message => response_body["message"] , :body => response_body }
+    end
   end
 
   def get_app(app_id)
-    authorize!
-
-    app = {}
-
-    resp = rpeek $phpfog.get("/apps/#{app_id}")
-
-    if resp.code == 200
-      doc = Nokogiri::HTML(resp.body)
-
-      app['site_address'] = doc.css("#app-view-live a").attr('href')
-      app['repo'] = doc.css("#source_code ul code").text.strip[2..-1].gsub(/^git clone /, "")
-
-      return app
+    response = api_call do 
+      $phpfog.get("/apps/#{app_id}", nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    end
+    response_body = JSON.parse(response.body)
+    if response.code == 200
+      return { :status => response.code, :message => "OK" , :body => response_body }
     else
-      return nil
+      return { :status => response.code, :message => response_body["message"] , :body => response_body }
+    end
+  end
+
+  def new_app(cloud_id, jump_start_id, login, mysql_password, domain_name)
+    response = api_call do 
+      params = { :cloud_id => cloud_id } if cloud_id != "0"
+      payload = { 
+        "jump_start_id" => jump_start_id, 
+        "login" => login,
+        "password" => mysql_password,
+        "domain_name" => domain_name
+      }
+      response = $phpfog.post("/apps", params, JSON.generate(payload), { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    end  
+    response_body = JSON.parse(response.body)
+    if response.code == 200
+      return { :status => response.code, :message => "OK" , :body => response_body }
+    else
+      return { :status => response.code, :message => response_body["message"] , :body => response_body }
     end
   end
 
   def delete_app(app_id)
-    authorize!
-
-    resp = rpeek $phpfog.get("/apps/#{app_id}")
-    resp = rpeek $phpfog.delete("/apps/#{app_id}", { 'authenticity_token' => get_auth_token(resp.body) })
-
-    resp.code == 200
+    response = api_call do 
+      response = $phpfog.delete("/apps/#{app_id}", nil, { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    end  
+    response
   end
 
-  def domain_available?(domain_name)
-    authorize!
-    resp = rpeek $phpfog.get("/apps/subdomain_available?app[domain_name]=#{domain_name}", nil, { 'Accept' => 'application/json, text/javascript, */*; q=0.01', 'X-Requested-With' => 'XMLHttpRequest', 'Accept-Charset' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 'Accept-Charset' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 'Connection' => 'keep-alive'  })
-    return resp.code == '200' && resp.body == 'true'
-  end
-
-  def new_app(cloud_id, jumpstart_id, domain_name, mysql_password)
-    authorize!
-
-    new_app_path = '/apps/new'
-
-    unless cloud_id.nil? || cloud_id.empty?
-      new_app_path += "?cloud_id=#{cloud_id}"
-    end
-
-    resp = rpeek $phpfog.get(new_app_path)
-    resp = rpeek $phpfog.post("/apps", { 'authenticity_token' => get_auth_token(resp.body),
-                                          'cloud_id' => cloud_id,
-                                          'app[jump_start_id]' => jumpstart_id,
-                                          'app[login]' => 'Custom App',
-                                          'app[password]' => mysql_password,
-                                          'app[domain_name]' => domain_name })
-
-    if resp.code == 302
-      appIdRe = /\/(\d+)/
-      m = appIdRe.match(resp['location'])
-      return m.captures.shift unless m.nil?
-    end
-    nil
-  end
-
-  def login
-    username = (prompt "Username: ").strip
-    password = (prompt "Password: ", true).strip
-
-    payload = { 'login' => username, 'password' => password }
-    response = $phpfog.post("/user_session", nil, JSON.generate(payload), { :accept => "application/json" }) #"Api-Auth-Token"=>"just junkeee",
-    api_responce = JSON.parse(response.body)
-
-    if response.code == 201
-      set_session('api-auth-token', api_responce['api-auth-token'])
-      set_session('username', username)
-      return true
-    else
-      puts api_responce['message']
-      return false
-    end
-
-  end
-
-  def username
-    get_session('username')
-  end
+  # --- SSH Keys ----
 
   def get_sshkeys
     response = api_call do 
       $phpfog.get("/ssh_keys", nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
     end
-    return JSON.parse(response.body)
+    response_body = JSON.parse(response.body)
+    if response.code == 200
+      return { :status => response.code, :message => "OK" , :body => response_body }
+    else
+      return { :status => response.code, :message => response_body["message"] , :body => response_body }
+    end
   end
 
   def new_sshkey(ssh_key_name, ssh_key_key)
@@ -167,6 +101,47 @@ class PHPfog
       response = $phpfog.delete("/ssh_keys/#{sshkey_id}", nil, { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
     end  
     response
+  end
+
+  def get_app_categories
+    response = api_call do 
+      $phpfog.get("/app_categories", nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    end
+    return api_expect(response, [200]) do |api_response|
+      return { :status => response.code, :message => "OK" , :body => api_response }
+    end
+  end
+
+  # --- Untility ----
+
+  def domain_available?(domain_name)
+    response = api_call do
+      params = { "app[domain_name]" => domain_name }
+      $phpfog.get("/apps/subdomain_available", params, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    end
+    if response.code == 200
+      return response.body == 'true'
+    else
+      failure_message api_response['message']
+      exit
+    end
+  end
+
+  def login
+    username = (prompt "PHPFog Username: ").strip
+    password = (prompt "PHPFog Password: ", true).strip
+
+    payload = { 'login' => username, 'password' => password }
+    response = $phpfog.post("/user_session", nil, JSON.generate(payload), { :accept => "application/json" })
+    return api_expect(response, [201]) do |api_response|
+      set_session('api-auth-token', api_response['api-auth-token'])
+      set_session('username', username)
+      return true
+    end
+  end
+
+  def username
+    get_session('username')
   end
 
   def self.logout
@@ -213,22 +188,48 @@ class PHPfog
     session_file.close
   end
 
+  def api_expect(response, codes)
+    begin
+      api_response = JSON.parse(response.body)
+      if codes.include?(response.code)
+        return yield(api_response)
+      else
+        failure_message api_response['message']
+        return false
+      end
+    rescue JSON::ParserError
+      failure_message "Server response is invalid"
+      return false
+    end
+  end
+
   def api_call
     response = yield
-    if response.code == 401 && login
-      response = yield
-      if response.code == 401
-        api_response = JSON.parse(response.body)
-        puts api_response['message']
+    if response.code == 401
+      if login
+        response = yield
+        if response.code == 401
+          api_error(response)
+        end
+        return response
+      else
+        failure_message "Login failed"
         exit
       end
-      return response
     elsif response.code == 500
-      api_response = JSON.parse(response.body)
-      puts api_response['message']
-      exit
+      api_error(response)
     end
     response
+  end
+
+  def api_error(response)
+    begin
+      api_response = JSON.parse(response.body)
+      failure_message api_response['message'] 
+    rescue
+      failure_message "Server response is invalid"
+    end
+    exit
   end
 
 end

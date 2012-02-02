@@ -17,7 +17,8 @@ Usage: pf list <list_command>
        pf create <create_command>
        pf delete <app_id>
        pf logout
-       pf view app_id
+       pf view <app_id>
+       pf open <app_id>
        pf genssh
        pf whoami
        pf help [command]
@@ -37,4 +38,3 @@ CREATE COMMAND
 
   app [<cloud_id>]
     Creates a new custom app. Specify a cloud id to create the app in or leave blank to create the app in the shared cloud.
-

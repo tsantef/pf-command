@@ -7,7 +7,13 @@ module Commands
       app_id = argv.shift
       
       phpfog = PHPfog.new
-      apps = phpfog.delete_app(app_id)
+      response = phpfog.delete_app(app_id)
+      if response.code == 204
+        success_message 'Successfully deleted app.'
+      else
+        api_response = JSON.parse(response.body)
+        failure_message api_response['message']
+      end
 
     when "sshkey"
       sshkey_id = argv.shift

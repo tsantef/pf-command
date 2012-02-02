@@ -11,5 +11,13 @@ def success_message(message)
 end
 
 def failure_message(message)
-  puts green message
+  puts red message
+end
+
+def format_item(name, id, description=nil)
+	if description.nil?
+	  "#{bwhite(name)} (ID:#{cyan id})"
+	else
+	  "#{bwhite(name)} - #{description} (ID:#{cyan id})"
+	end
 end

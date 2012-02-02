@@ -13,24 +13,38 @@ module Commands
 
     when "apps"
       cloud_id = argv.shift
+      cloud_id = "0" if cloud_id.nil? || cloud_id.downcase == "shared"
       phpfog = PHPfog.new
-
-      apps = phpfog.get_apps(cloud_id)
-      apps.each do |app|
-        app_status = app['app']['aasm_state']
-        case app_status
-        when "Running"
-          app_status = green(app_status)
+      api_response = phpfog.get_apps(cloud_id)
+      if api_response[:status] == 200
+        apps = api_response[:body]
+        if apps.count > 0 
+          apps.each do |app|
+            app_status = app['app']['aasm_state']
+            app_status = green(app_status) if app_status == "Running"
+            puts format_item(app['app']['domain_name'], app['app']['id'], app_status)
+          end
         else
+          failure_message("No apps in the specified cloud")
         end
-        puts format_item(app['app']['domain_name'], app['app']['id'], app_status)
+      else
+        failure_message(api_response[:message])
       end
 
     when "sshkeys"
       phpfog = PHPfog.new
-      sshkeys = phpfog.get_sshkeys  
-      sshkeys.each do |sshkey|
-        puts format_item(sshkey['ssh_key']['name'], sshkey['ssh_key']['id'])
+      api_response = phpfog.get_sshkeys
+      if api_response[:status] == 200
+        sshkeys = api_response[:body]
+        if sshkeys.count > 0 
+          sshkeys.each do |sshkey|
+            puts format_item(sshkey['ssh_key']['name'], sshkey['ssh_key']['id'])
+          end
+        else
+          failure_message("No ssh keys found.")
+        end
+      else
+        failure_message(api_response[:message])
       end
     else
       puts "Unknown Command: " + (command || '')
@@ -42,11 +56,4 @@ module Commands
 
   private 
 
-  def format_item(name, id, description=nil)
-    if description.nil?
-      "#{bwhite(name)} (ID:#{cyan id})"
-    else
-      "#{bwhite(name)} - #{description} (ID:#{cyan id})"
-    end
-  end
 end
