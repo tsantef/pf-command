@@ -18,10 +18,12 @@ module Commands
       categories.each do |category|
         puts "#{category['name']}"
         category['apps'].each do |jump_start|
-          puts " #{bwhite(index)}. #{jump_start['name']} #{jump_start['version']}"
-          category.delete('apps')
-          jump_starts << {:jump_start_id => jump_start['id'], :category_id => category['id'], :jump_start_name => jump_start['name'] }
-          index += 1
+          if !jump_start.nil?
+            puts " #{bwhite(index)}. #{jump_start['name']} #{jump_start['version']}"
+            category.delete('apps')
+            jump_starts << {:jump_start_id => jump_start['id'], :category_id => category['id'], :jump_start_name => jump_start['name'] }
+            index += 1
+          end
         end
       end
       jump_start_index = prompt 'Choose a jump start (Default Custom App): '

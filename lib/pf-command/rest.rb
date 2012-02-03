@@ -17,7 +17,21 @@ class Rest
 
   def initialize(url, username = nil, password = nil)
     uri = URI(url)
-    $http = RestClient::Resource.new uri.to_s, {:user => username, :password => password}
+
+    host = nil
+    if uri.user.nil? && uri.password.nil?
+      host = uri.to_s
+    else
+      username = (!uri.user.nil? || uri.user == "") ? CGI::unescape(uri.user) : username
+      password = (!uri.password.nil? || uri.password == "") ? CGI::unescape(uri.password) : password
+      if uri.port.nil?
+        host = "#{uri.scheme}://#{uri.host}"
+      else
+        host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
+      end
+    end
+
+    $http = RestClient::Resource.new host, {:user => username, :password => password}
   end
 
   def get(path, params=nil, headers=nil)
@@ -74,11 +88,13 @@ private
       body = nil
     end
 
-    $cookies = {} if $cookies.nil?
-    unless last_response.raw_headers['set-cookie'].nil?
-      last_response.raw_headers['set-cookie'].each do |cookie|
-        key, value = cookie.split('=')
-        $cookies[key] = value
+    if !last_response.nil?
+      $cookies = {} if $cookies.nil?
+      unless last_response.raw_headers['set-cookie'].nil?
+        last_response.raw_headers['set-cookie'].each do |cookie|
+          key, value = cookie.split('=')
+          $cookies[key] = value
+        end
       end
     end
 
