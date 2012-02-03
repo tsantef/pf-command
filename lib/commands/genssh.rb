@@ -14,7 +14,7 @@ module Commands
     end
     shell_script.close
     if /^ssh-rsa/.match( ssh_key ) 
-      phpfog.new_ssh("",ssh_key)
+      phpfog.new_sshkey("",ssh_key)
       puts "word"
     end
     true

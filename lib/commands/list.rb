@@ -5,25 +5,47 @@ module Commands
     case command
     when "clouds"
       phpfog = PHPfog.new
-      clouds = phpfog.get_clouds
+      clouds = phpfog.get_dedicated_clouds
+      clouds << {"dedicated_cloud"=>{"name"=>"Shared", "id"=>0, "subscription_plan_id"=>1}}
       clouds.each do |cloud|
-        puts "#{bwhite(cloud['name'])} - #{cloud['description']} (ID:#{cyan cloud['id']})"
+        puts format_item(cloud['dedicated_cloud']['name'], cloud['dedicated_cloud']['id'])
       end
 
     when "apps"
       cloud_id = argv.shift
+      cloud_id = "0" if cloud_id.nil? || cloud_id.downcase == "shared"
       phpfog = PHPfog.new
-
-      apps = phpfog.get_apps(cloud_id)
-      apps.each do |app|
-        app_status = app['status']
-        case app['status']
-        when "Running"
-          app_status = green(app_status)
+      api_response = phpfog.get_apps(cloud_id)
+      if api_response[:status] == 200
+        apps = api_response[:body]
+        if apps.count > 0 
+          apps.each do |app|
+            app_status = app['app']['aasm_state']
+            app_status = green(app_status) if app_status == "Running"
+            puts format_item(app['app']['domain_name'], app['app']['id'], app_status)
+          end
+        else
+          failure_message("No apps in the specified cloud")
         end
-        puts "#{bwhite(app['name'])} - #{app_status} (ID:#{cyan app['id']})"
+      else
+        failure_message(api_response[:message])
       end
 
+    when "sshkeys"
+      phpfog = PHPfog.new
+      api_response = phpfog.get_sshkeys
+      if api_response[:status] == 200
+        sshkeys = api_response[:body]
+        if sshkeys.count > 0 
+          sshkeys.each do |sshkey|
+            puts format_item(sshkey['ssh_key']['name'], sshkey['ssh_key']['id'])
+          end
+        else
+          failure_message("No ssh keys found.")
+        end
+      else
+        failure_message(api_response[:message])
+      end
     else
       puts "Unknown Command: " + (command || '')
       return false
@@ -31,4 +53,7 @@ module Commands
 
     true
   end
+
+  private 
+
 end

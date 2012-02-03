@@ -4,19 +4,20 @@ module Commands
     directory = argv.shift 
 
     if app_id.nil? || app_id != app_id.to_i.to_s
-      puts "You must specify an app id."
+      failure_message "You must specify an app id."
       return false
     end
 
     phpfog = PHPfog.new
-    app = phpfog.get_app(app_id)
+    api_response = phpfog.get_app(app_id)
+    if api_response[:status] == 200
+      app = api_response[:body]
 
-    unless app.nil?
-      exec("git clone #{app['repo']} #{directory}")
+      exec("git clone #{app['app']['git_url']} #{directory}")
     else
-      puts "App #{red(app_id)} not found."
-      return false
+      failure_message(api_response[:message])
     end
+
     true
   end
 end
