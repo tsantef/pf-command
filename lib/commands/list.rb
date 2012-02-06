@@ -6,9 +6,9 @@ module Commands
     when "clouds"
       phpfog = PHPfog.new
       clouds = phpfog.get_dedicated_clouds
-      clouds << {"dedicated_cloud"=>{"name"=>"Shared", "id"=>0, "subscription_plan_id"=>1}}
+      clouds << {"name"=>"Shared", "id"=>0, "subscription_plan_id"=>1}
       clouds.each do |cloud|
-        puts format_item(cloud['dedicated_cloud']['name'], cloud['dedicated_cloud']['id'])
+        puts format_item(cloud['name'], cloud['id'])
       end
 
     when "apps"
@@ -20,9 +20,9 @@ module Commands
         apps = api_response[:body]
         if apps.count > 0 
           apps.each do |app|
-            app_status = app['app']['aasm_state']
+            app_status = app['status']
             app_status = green(app_status) if app_status == "Running"
-            puts format_item(app['app']['domain_name'], app['app']['id'], app_status)
+            puts format_item(app['name'], app['id'], app_status)
           end
         else
           failure_message("No apps in the specified cloud")
@@ -38,7 +38,7 @@ module Commands
         sshkeys = api_response[:body]
         if sshkeys.count > 0 
           sshkeys.each do |sshkey|
-            puts format_item(sshkey['ssh_key']['name'], sshkey['ssh_key']['id'])
+            puts format_item(sshkey['name'], sshkey['id'])
           end
         else
           failure_message("No ssh keys found.")

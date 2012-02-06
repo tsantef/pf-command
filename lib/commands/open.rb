@@ -9,7 +9,7 @@ module Commands
       api_response = phpfog.get_app(app_id)
       if api_response[:status] == 200
         app = api_response[:body]
-        system("open", "http://"+app['app']['domain_name'])
+        system("open", "http://"+app['domain_name'])
       else
         failure_message(api_response[:message])
       end

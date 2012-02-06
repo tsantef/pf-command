@@ -13,7 +13,7 @@ module Commands
     if api_response[:status] == 200
       app = api_response[:body]
 
-      exec("git clone #{app['app']['git_url']} #{directory}")
+      exec("git clone #{app['git_url']} #{directory}")
     else
       failure_message(api_response[:message])
     end

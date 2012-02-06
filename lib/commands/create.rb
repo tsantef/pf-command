@@ -77,8 +77,8 @@ module Commands
       api_response = phpfog.new_app(cloud_id, jump_start_id, "Custom App", mysql_password, domain_name)
       if api_response[:status] == 201
         app = api_response[:body]
-        app['app']['id']
-        puts format_item("New app created", app['app']['id'])
+        app['id']
+        puts format_item("New app created", app['id'])
       else
         failure_message(api_response[:message])
       end
