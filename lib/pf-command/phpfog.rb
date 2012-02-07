@@ -204,22 +204,27 @@ class PHPfog
   end
 
   def api_call
-    response = yield
-    if response.code == 401
-      if login
-        response = yield
-        if response.code == 401
-          api_error(response)
+    begin
+      response = yield
+      if response.code == 401
+        if login
+          response = yield
+          if response.code == 401
+            api_error(response)
+          end
+          return response
+        else
+          failure_message "Login failed"
+          exit
         end
-        return response
-      else
-        failure_message "Login failed"
-        exit
+      elsif response.code == 500
+        api_error(response)
       end
-    elsif response.code == 500
-      api_error(response)
+      response
+    rescue Errno::ECONNREFUSED
+      failure_message "Server refused connection"
+      exit
     end
-    response
   end
 
   def api_error(response)

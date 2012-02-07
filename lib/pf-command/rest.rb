@@ -83,9 +83,6 @@ private
       last_response = $http[path].send(method, *args)
     rescue RestClient::ExceptionWithResponse => e
       last_response = e.response
-    rescue Errno::ECONNREFUSED
-      code = -1
-      body = nil
     end
 
     if !last_response.nil?
