@@ -17,10 +17,10 @@ module Commands
       index = 1
       categories.each do |category|
         puts "#{category['name']}"
-        category['apps'].each do |jump_start|
+        category['jump_starts'].each do |jump_start|
           if !jump_start.nil?
             puts " #{bwhite(index)}. #{jump_start['name']} #{jump_start['version']}"
-            category.delete('apps')
+            category.delete('jump_starts')
             jump_starts << {:jump_start_id => jump_start['id'], :category_id => category['id'], :jump_start_name => jump_start['name'] }
             index += 1
           end

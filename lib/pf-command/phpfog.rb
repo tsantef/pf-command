@@ -41,6 +41,7 @@ class PHPfog
       $phpfog.get("/apps/#{app_id}", nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
     end
     response_body = JSON.parse(response.body)
+    p response_body
     if response.code == 200
       return { :status => response.code, :message => "OK" , :body => response_body }
     else
@@ -116,7 +117,7 @@ class PHPfog
 
   def domain_available?(domain_name)
     response = api_call do
-      params = { "app[domain_name]" => domain_name }
+      params = { :domain_name => domain_name }
       $phpfog.get("/apps/subdomain_available", params, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
     end
     if response.code == 200
