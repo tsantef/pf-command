@@ -23,10 +23,14 @@ class PHPfog
   # --- Apps ----
 
   def get_apps(cloud_id)
-    params = {}
-    params = { :cloud_id => cloud_id } unless cloud_id == "0"
+    request_url = ""
+    if !cloud_id.nil?
+      request_url = "clouds/#{cloud_id}/apps"
+    else
+      request_url = "apps"
+    end
     response = api_call do 
-      $phpfog.get("/apps", params, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+      $phpfog.get(request_url, nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
     end
     response_body = JSON.parse(response.body)
     if response.code == 200
@@ -51,14 +55,19 @@ class PHPfog
 
   def new_app(cloud_id, jump_start_id, login, mysql_password, domain_name)
     response = api_call do 
-      params = { :cloud_id => cloud_id } if cloud_id != "0"
+      request_url = ""
+      if !cloud_id.nil?
+        request_url = "clouds/#{cloud_id}/apps"
+      else
+        request_url = "apps"
+      end
       payload = { 
         "jump_start_id" => jump_start_id, 
         "login" => login,
         "password" => mysql_password,
         "domain_name" => domain_name
       }
-      response = $phpfog.post("/apps", params, JSON.generate(payload), { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+      response = $phpfog.post(request_url, nil, JSON.generate(payload), { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
     end  
     response_body = JSON.parse(response.body)
     if response.code == 200

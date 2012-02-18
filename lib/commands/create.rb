@@ -7,7 +7,6 @@ module Commands
       phpfog = PHPfog.new
 
       cloud_id = argv.shift
-      cloud_id = "0" if cloud_id.nil? || cloud_id.downcase == "shared"
       
       api_response = phpfog.get_app_categories
       categories = api_response[:body]

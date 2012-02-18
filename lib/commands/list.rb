@@ -13,7 +13,6 @@ module Commands
 
     when "apps"
       cloud_id = argv.shift
-      cloud_id = "0" if cloud_id.nil? || cloud_id.downcase == "shared"
       phpfog = PHPfog.new
       api_response = phpfog.get_apps(cloud_id)
       if api_response[:status] == 200
